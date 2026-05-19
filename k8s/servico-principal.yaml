@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: servico-principal
+  namespace: vendcar
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: servico-principal
+  template:
+    metadata:
+      labels:
+        app: servico-principal
+    spec:
+      containers:
+        - name: servico-principal
+          image: ghcr.io/guilhermepoletti/vendcar-servico-principal:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: vendcar-secrets
+                  key: db-password
+            - name: DATABASE_URL
+              value: postgresql://vendcar:$(DB_PASSWORD)@db-principal:5432/db_principal
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: vendcar-secrets
+                  key: jwt-secret
+            - name: PORT
+              value: '3000'
+          resources:
+            requests:
+              memory: '128Mi'
+              cpu: '100m'
+            limits:
+              memory: '512Mi'
+              cpu: '500m'
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: servico-principal
+  namespace: vendcar
+spec:
+  selector:
+    app: servico-principal
+  ports:
+    - port: 3000
+      targetPort: 3000
+  type: ClusterIP

@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db-principal
+  namespace: vendcar
+spec:
+  serviceName: db-principal
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db-principal
+  template:
+    metadata:
+      labels:
+        app: db-principal
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: db_principal
+            - name: POSTGRES_USER
+              value: vendcar
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: vendcar-secrets
+                  key: db-password
+          volumeMounts:
+            - name: db-principal-storage
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              memory: '128Mi'
+              cpu: '100m'
+            limits:
+              memory: '256Mi'
+              cpu: '250m'
+          readinessProbe:
+            exec:
+              command: ['pg_isready', '-U', 'vendcar', '-d', 'db_principal']
+            initialDelaySeconds: 5
+            periodSeconds: 10
+  volumeClaimTemplates:
+    - metadata:
+        name: db-principal-storage
+      spec:
+        accessModes: ['ReadWriteOnce']
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-principal
+  namespace: vendcar
+spec:
+  selector:
+    app: db-principal
+  ports:
+    - port: 5432
+      targetPort: 5432
+  clusterIP: None

@@ -1,0 +1,37 @@
+version: '3.9'
+
+services:
+  db-principal:
+    image: postgres:16-alpine
+    container_name: vendcar-db-principal
+    environment:
+      POSTGRES_DB: db_principal
+      POSTGRES_USER: vendcar
+      POSTGRES_PASSWORD: vendcar123
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-principal-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U vendcar -d db_principal']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  servico-principal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vendcar-servico-principal
+    depends_on:
+      db-principal:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://vendcar:vendcar123@db-principal:5432/db_principal
+      JWT_SECRET: vendcar-jwt-secret-prod
+      PORT: 3000
+    ports:
+      - '3000:3000'
+
+volumes:
+  db-principal-data:
