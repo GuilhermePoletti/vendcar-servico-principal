@@ -10,6 +10,7 @@ import { AtualizarClienteUseCase } from '../../../application/use-cases/cliente/
 import { DeletarClienteUseCase } from '../../../application/use-cases/cliente/deletar-cliente.use-case';
 import { CriarClienteDto, AtualizarClienteDto } from './dto/cliente.dto';
 import { DomainException } from '../../../domain/exceptions/domain.exception';
+import { Public } from '../../auth/public.decorator';
 
 @ApiTags('Clientes')
 @Controller('clientes')
@@ -38,6 +39,7 @@ export class ClienteController {
     return this.listarClientes.execute();
   }
 
+  @Public()
   @Get('cpf/:cpf')
   @ApiOperation({ summary: 'Buscar cliente por CPF' })
   @ApiResponse({ status: 200, description: 'Cliente encontrado' })

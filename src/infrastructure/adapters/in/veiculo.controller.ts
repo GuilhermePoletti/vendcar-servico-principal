@@ -12,6 +12,8 @@ import { VenderVeiculoUseCase } from '../../../application/use-cases/veiculo/ven
 import { DisponibilizarVeiculoUseCase } from '../../../application/use-cases/veiculo/disponibilizar-veiculo.use-case';
 import { CriarVeiculoDto, AtualizarVeiculoDto } from './dto/veiculo.dto';
 import { DomainException } from '../../../domain/exceptions/domain.exception';
+import { Public } from '../../auth/public.decorator';
+import { VeiculoRepositoryPort } from '../../../application/ports/out/veiculo.repository.port';
 
 @ApiTags('Veículos')
 @Controller('veiculos')
@@ -24,6 +26,7 @@ export class VeiculoController {
     private readonly reservarVeiculo: ReservarVeiculoUseCase,
     private readonly venderVeiculo: VenderVeiculoUseCase,
     private readonly disponibilizarVeiculo: DisponibilizarVeiculoUseCase,
+    private readonly veiculoRepository: VeiculoRepositoryPort,
   ) {}
 
   @Post()
@@ -47,6 +50,19 @@ export class VeiculoController {
   @ApiResponse({ status: 200, description: 'Lista de veículos disponíveis' })
   async listar() {
     return this.listarDisponiveis.execute();
+  }
+
+  @Public()
+  @Get(':id')
+  @ApiOperation({ summary: 'Buscar veículo por ID' })
+  @ApiResponse({ status: 200, description: 'Veículo encontrado' })
+  @ApiResponse({ status: 404, description: 'Veículo não encontrado' })
+  async buscarPorId(@Param('id') id: string) {
+    const veiculo = await this.veiculoRepository.buscarPorId(id);
+    if (!veiculo) {
+      throw new NotFoundException(`Veículo com ID ${id} não encontrado`);
+    }
+    return veiculo;
   }
 
   @Put(':id')
@@ -88,6 +104,7 @@ export class VeiculoController {
   // ENDPOINTS SAGA (usados pelo Serviço de Vendas via HTTP)
   // ─────────────────────────────────────────────
 
+  @Public()
   @Patch(':id/reservar')
   @ApiOperation({ summary: 'Reservar veículo (SAGA Lock)' })
   @ApiResponse({ status: 200, description: 'Veículo reservado' })
@@ -103,6 +120,7 @@ export class VeiculoController {
     }
   }
 
+  @Public()
   @Patch(':id/vender')
   @ApiOperation({ summary: 'Confirmar venda (SAGA Confirm)' })
   @ApiResponse({ status: 200, description: 'Venda confirmada' })
@@ -118,6 +136,7 @@ export class VeiculoController {
     }
   }
 
+  @Public()
   @Patch(':id/disponibilizar')
   @ApiOperation({ summary: 'Cancelar reserva (SAGA Cancel)' })
   @ApiResponse({ status: 200, description: 'Reserva cancelada' })
