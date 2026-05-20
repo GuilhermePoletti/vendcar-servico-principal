@@ -129,4 +129,16 @@ export class Veiculo {
       throw new DomainException('Preço deve ser maior que zero');
     }
   }
+
+  toJSON() {
+    return {
+      id: this.id,
+      idMarca: this.idMarca,
+      modelo: this.modelo,
+      ano: this.ano,
+      cor: this.cor,
+      preco: this.preco,
+      status: this.status,
+    };
+  }
 }

@@ -62,4 +62,13 @@ export class Cliente {
       throw new DomainException('Email deve ter um formato válido');
     }
   }
+
+  toJSON() {
+    return {
+      id: this.id,
+      nome: this.nome,
+      cpf: this.cpf,
+      email: this.email,
+    };
+  }
 }

@@ -32,4 +32,11 @@ export class Marca {
       );
     }
   }
+
+  toJSON() {
+    return {
+      id: this.id,
+      nome: this.nome,
+    };
+  }
 }

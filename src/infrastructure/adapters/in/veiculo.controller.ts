@@ -36,7 +36,8 @@ export class VeiculoController {
   @ApiResponse({ status: 400, description: 'Dados inválidos ou marca não encontrada' })
   async criar(@Body() dto: CriarVeiculoDto) {
     try {
-      return await this.criarVeiculo.execute(dto);
+      const veiculo = await this.criarVeiculo.execute(dto);
+      return veiculo.toJSON();
     } catch (error) {
       if (error instanceof DomainException) {
         throw new BadRequestException(error.message);
@@ -49,7 +50,8 @@ export class VeiculoController {
   @ApiOperation({ summary: 'Listar veículos disponíveis (ordenado por preço ↑)' })
   @ApiResponse({ status: 200, description: 'Lista de veículos disponíveis' })
   async listar() {
-    return this.listarDisponiveis.execute();
+    const veiculos = await this.listarDisponiveis.execute();
+    return veiculos.map(v => v.toJSON());
   }
 
   @Public()
@@ -62,7 +64,7 @@ export class VeiculoController {
     if (!veiculo) {
       throw new NotFoundException(`Veículo com ID ${id} não encontrado`);
     }
-    return veiculo;
+    return veiculo.toJSON();
   }
 
   @Put(':id')
@@ -71,7 +73,8 @@ export class VeiculoController {
   @ApiResponse({ status: 404, description: 'Veículo não encontrado' })
   async atualizar(@Param('id') id: string, @Body() dto: AtualizarVeiculoDto) {
     try {
-      return await this.atualizarVeiculo.execute(id, dto);
+      const veiculo = await this.atualizarVeiculo.execute(id, dto);
+      return veiculo.toJSON();
     } catch (error) {
       if (error instanceof DomainException) {
         throw new NotFoundException(error.message);

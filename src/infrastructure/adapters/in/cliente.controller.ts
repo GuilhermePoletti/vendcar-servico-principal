@@ -29,14 +29,16 @@ export class ClienteController {
   @ApiResponse({ status: 201, description: 'Cliente criado com sucesso' })
   @ApiResponse({ status: 400, description: 'Dados inválidos ou CPF duplicado' })
   async criar(@Body() dto: CriarClienteDto) {
-    return this.criarCliente.execute(dto);
+    const cliente = await this.criarCliente.execute(dto);
+    return cliente.toJSON();
   }
 
   @Get()
   @ApiOperation({ summary: 'Listar todos os clientes' })
   @ApiResponse({ status: 200, description: 'Lista de clientes' })
   async listar() {
-    return this.listarClientes.execute();
+    const clientes = await this.listarClientes.execute();
+    return clientes.map(c => c.toJSON());
   }
 
   @Public()
@@ -46,7 +48,8 @@ export class ClienteController {
   @ApiResponse({ status: 404, description: 'Cliente não encontrado' })
   async buscarPorCpf(@Param('cpf') cpf: string) {
     try {
-      return await this.buscarClientePorCpf.execute(cpf);
+      const cliente = await this.buscarClientePorCpf.execute(cpf);
+      return cliente.toJSON();
     } catch (error) {
       if (error instanceof DomainException) {
         throw new NotFoundException(error.message);
@@ -61,7 +64,8 @@ export class ClienteController {
   @ApiResponse({ status: 404, description: 'Cliente não encontrado' })
   async atualizar(@Param('id') id: string, @Body() dto: AtualizarClienteDto) {
     try {
-      return await this.atualizarCliente.execute(id, dto);
+      const cliente = await this.atualizarCliente.execute(id, dto);
+      return cliente.toJSON();
     } catch (error) {
       if (error instanceof DomainException) {
         throw new NotFoundException(error.message);
