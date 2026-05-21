@@ -36,7 +36,7 @@ describe('ClienteController', () => {
 
     const result = await controller.criar({ nome: 'João', cpf: '52998224725', email: 'joao@email.com' });
 
-    expect(result).toBe(cliente);
+    expect(result).toEqual(cliente.toJSON());
     expect(mocks.criarCliente.execute).toHaveBeenCalledTimes(1);
   });
 
@@ -54,7 +54,7 @@ describe('ClienteController', () => {
 
     const result = await controller.buscarPorCpf('52998224725');
 
-    expect(result).toBe(cliente);
+    expect(result).toEqual(cliente.toJSON());
   });
 
   it('deve lançar NotFoundException quando CPF não encontrado', async () => {
@@ -69,7 +69,7 @@ describe('ClienteController', () => {
 
     const result = await controller.atualizar('uuid', { nome: 'Novo Nome' });
 
-    expect(result).toBe(cliente);
+    expect(result).toEqual(cliente.toJSON());
   });
 
   it('deve deletar um cliente', async () => {

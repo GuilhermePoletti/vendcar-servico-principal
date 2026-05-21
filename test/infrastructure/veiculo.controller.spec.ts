@@ -42,7 +42,7 @@ describe('VeiculoController', () => {
 
     const result = await controller.criar({ idMarca: marcaId, modelo: 'Civic', ano: 2024, cor: 'Prata', preco: 135000 });
 
-    expect(result).toBe(veiculo);
+    expect(result).toEqual(veiculo.toJSON());
   });
 
   it('deve lançar BadRequestException quando marca não existe', async () => {
@@ -67,7 +67,7 @@ describe('VeiculoController', () => {
 
     const result = await controller.atualizar('uuid', { cor: 'Azul' });
 
-    expect(result).toBe(veiculo);
+    expect(result).toEqual(veiculo.toJSON());
   });
 
   it('deve deletar veículo', async () => {
