@@ -43,13 +43,13 @@ graph TD
     end
 
     subgraph "Microsserviço de Catálogo"
-        Principal[🚗 Serviço Principal <br> NestJS | Porta :3000]:::microservice
+        Principal["🚗 Serviço Principal <br> NestJS | Porta :3000"]:::microservice
         DbPrincipal[(PostgreSql: db_principal <br> Porta :5432)]:::database
         Principal --> DbPrincipal
     end
 
     subgraph "Microsserviço Transacional"
-        Vendas[💰 Serviço de Vendas <br> NestJS | Porta :3001]:::microservice
+        Vendas["💰 Serviço de Vendas <br> NestJS | Porta :3001"]:::microservice
         DbVendas[(PostgreSql: db_vendas <br> Porta :5433)]:::database
         Vendas --> DbVendas
         Cron[⏰ Cron Worker <br> Reconciliação a cada 10s]:::gateway
@@ -453,18 +453,23 @@ docker build -t ghcr.io/guilhermepoletti/vendcar-servico-vendas:latest-local-2 .
 Os manifests de implantação organizados e validados estão na pasta `/k8s`. Siga a ordem exata de aplicação para evitar falhas de dependência:
 
 ```bash
-# 1. Criar o Namespace isolado e os Secrets
+# 1. Criar o Namespace isolado
 kubectl apply -f k8s/namespace.yaml
 
-# 2. Aplicar os Bancos de Dados isolados
+# 2. Criar os Secrets requeridos pelos deployments (Senha do Banco e JWT Secret)
+kubectl -n vendcar create secret generic vendcar-secrets \
+  --from-literal=db-password=vendcar123 \
+  --from-literal=jwt-secret=vendcar-jwt-secret-prod
+
+# 3. Aplicar os Bancos de Dados isolados
 kubectl apply -f k8s/db-principal.yaml
 kubectl apply -f k8s/db-vendas.yaml
 
-# 3. Aguardar a prontidão total dos bancos antes de iniciar os serviços NestJS
+# 4. Aguardar a prontidão total dos bancos antes de iniciar os serviços NestJS
 kubectl -n vendcar wait --for=condition=ready pod -l app=db-principal --timeout=120s
 kubectl -n vendcar wait --for=condition=ready pod -l app=db-vendas --timeout=120s
 
-# 4. Implantar os Microsserviços
+# 5. Implantar os Microsserviços
 kubectl apply -f k8s/servico-principal.yaml
 kubectl apply -f k8s/servico-vendas.yaml
 ```
@@ -573,4 +578,4 @@ A documentação interativa Swagger do catálogo estará pronta para uso em: [ht
 
 ---
 
-> 💡 **Nota aos Avaliadores**: O projeto foi concebido seguindo as melhores práticas modernas de desenvolvimento corporativo. Sinta-se à vontade para utilizar o script automatizado `node test-e2e.js` ou explorar os Swaggers interativos de cada serviço para avaliar a consistência transacional do fluxo SAGA!
+> 💡 **Nota**: Sinta-se à vontade para utilizar o script automatizado `node test-e2e.js` ou explorar os Swaggers interativos de cada serviço para avaliar a consistência transacional do fluxo SAGA!
