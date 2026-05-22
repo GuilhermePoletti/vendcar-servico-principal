@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: servico-principal
-          image: ghcr.io/guilhermepoletti/vendcar-servico-principal:latest
+          image: ghcr.io/guilhermepoletti/vendcar-servico-principal:94b84e1fe20341a685c5bdf56f989f106838d1b0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
